@@ -108,13 +108,43 @@ plot(calibrate_models_test[[4]],
 # for a new patient based on the final Cox model.
 # Note: time_to_event is expressed in months in this dataset.
 ###############################################################
+######################### my baseline survival hazard 
+#Extract the baseline survival function
+baseline_surv <- basehaz(calib_model_train, centered = TRUE)
+baseline_surv
+
+> Find the baseline hazard and calculate survival probability at 24 months
+> baseline_hazard_24 <- baseline_surv[baseline_surv$time == 24, "hazard"]  
+> baseline_survival_24 <- exp(-baseline_hazard_24)  
+> baseline_survival_24
+[1] 0.9400388
+
+>Find the baseline hazard and calculate survival probability at 18 months
+> baseline_hazard_18 <- baseline_surv[baseline_surv$time == 18, "hazard"]  
+> baseline_survival_18 <- exp(-baseline_hazard_18)  
+> baseline_survival_18
+[1] 0.9527748
+
+> Find the baseline hazard and calculate survival probability at 12 months
+> baseline_hazard_12 <- baseline_surv[baseline_surv$time == 12, "hazard"]  # Hazard à 12 mois
+> baseline_survival_12 <- exp(-baseline_hazard_12)  # Survie de base à 12 mois
+> baseline_survival_12
+[1] 0.9662098
+
+> Find the baseline hazard and calculate survival probability at 6 months
+> baseline_hazard_6 <- baseline_surv[baseline_surv$time == 6, "hazard"]  # Hazard à 6 mois
+> baseline_survival_6 <- exp(-baseline_hazard_6)  # Survie de base à 6 mois
+> baseline_survival_6
+[1] 0.9811251
+#######################
+
 
 RAISE_predict <- function(newdata, time_months = 12) {
   # Compute the linear predictor for the new patient
   lp <- predict(cox_model, newdata = newdata, type = "lp")
   
   # Extract the baseline cumulative hazard from the fitted model
-  base_surv <- basehaz(cox_model, centered = TRUE)
+  base_surv <- basehaz(cox_model, centered = TRUE) #use the previous values for baseline hazard at 6,12,18,24 months
   
   # Identify the baseline cumulative hazard closest to the desired time (in months)
   surv_time <- base_surv$hazard[which.min(abs(base_surv$time - time_months))]
@@ -125,6 +155,7 @@ RAISE_predict <- function(newdata, time_months = 12) {
   # Return the predicted probability (numeric)
   return(pred_risk)
 }
+
 
 ###############################################################
 # Example: Predict 12-month infection risk for a new patient
